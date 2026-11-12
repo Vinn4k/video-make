@@ -1,0 +1,8 @@
+{
+  "description": "Pergunta sobre uma imagem com Qwen3-VL 8B (nó TextGenerate). Usada para dar nota às imagens candidatas de cada cena.",
+  "inputs": {
+    "image": "2.inputs.image",
+    "prompt": "3.inputs.prompt"
+  },
+  "output": {"node": "4", "kind": "text"}
+}

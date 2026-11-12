@@ -1,0 +1,238 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel do canal</title>
+<style>
+:root{--fundo:#0B0F14;--cartao:#151b23;--linha:#2b3440;--texto:#eee;--texto2:#b8bfc8;--mudo:#8a929c;--marca:#F5C518;
+ --s1:#3987e5;--s2:#d95926;--s3:#199e70;--bom:#2f9e44;--ruim:#e5484d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fundo);color:var(--texto);font:14px system-ui,sans-serif}
+header{position:sticky;top:0;z-index:3;background:var(--fundo);padding:10px 20px;border-bottom:1px solid #333;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+header b{color:var(--marca);font-size:16px}
+nav button{background:none;color:var(--texto2);border:0;border-bottom:3px solid transparent;padding:6px 4px;margin-right:10px;font:inherit;font-weight:700;cursor:pointer}
+nav button.ativa{color:var(--texto);border-color:var(--marca)}
+main{padding:16px 20px;max-width:1400px;margin:0 auto}
+section{display:none}section.ativa{display:block}
+.filtros{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:12px}
+.filtros label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mudo)}
+.filtros label.cb{flex-direction:row;align-items:center;gap:6px;color:var(--texto2);font-size:13px}
+input,select{padding:6px 8px;background:var(--fundo);color:var(--texto);border:1px solid #444;border-radius:6px;font:inherit}
+input[type=checkbox]{padding:0}
+button.acao{background:var(--marca);color:#000;border:0;border-radius:6px;padding:7px 12px;font-weight:700;cursor:pointer}
+button.acao:disabled{opacity:.5;cursor:wait}
+.info{color:var(--mudo);font-size:13px;margin:6px 0 10px}
+.aviso{color:var(--marca)}
+table{width:100%;border-collapse:collapse;background:var(--cartao);border-radius:10px;overflow:hidden}
+th,td{padding:7px 8px;text-align:left;border-bottom:1px solid var(--linha);vertical-align:middle}
+th{font-size:12px;color:var(--mudo);font-weight:700;white-space:nowrap;user-select:none}
+th.ord{cursor:pointer}th.ord:hover{color:var(--texto)}th.sel{color:var(--marca)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr:hover td{background:#1b232d}
+td img{width:120px;aspect-ratio:16/9;object-fit:cover;border-radius:4px;display:block}
+a{color:#8fc1ff;text-decoration:none}a:hover{text-decoration:underline}
+.tit{font-weight:600;line-height:1.3}.sub{color:var(--mudo);font-size:12px;margin-top:2px}
+.selo{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;background:var(--linha);color:var(--texto2);margin-right:4px}
+.selo.alta{background:var(--marca);color:#000}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:16px}
+.tile{background:var(--cartao);border-radius:10px;padding:12px 14px}
+.tile .r{font-size:12px;color:var(--mudo)}.tile .v{font-size:26px;font-weight:800;margin:4px 0;font-variant-numeric:tabular-nums}
+.tile .d{font-size:12px;color:var(--texto2)}
+.cartao{background:var(--cartao);border-radius:10px;padding:14px;margin-bottom:16px}
+.cartao h2{font-size:15px;margin:0 0 4px}
+.legenda{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--texto2);margin:6px 0}
+.legenda i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.graf{position:relative}
+.graf svg{width:100%;height:280px;display:block}
+.dica{position:absolute;pointer-events:none;background:#0B0F14;border:1px solid #444;border-radius:6px;padding:6px 9px;font-size:12px;display:none;white-space:nowrap;z-index:2}
+.dica b{display:block;margin-bottom:3px}
+.cor{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+#log{white-space:pre-wrap;background:#000;color:#9aa;font:12px ui-monospace,monospace;padding:8px;border-radius:6px;max-height:180px;overflow:auto;display:none;margin-bottom:12px}
+.vazio{padding:30px;text-align:center;color:var(--mudo)}
+@media (max-width:700px){main{padding:12px}td img{width:80px}.esconde{display:none}}
+</style></head><body>
+<header><b>Video Make</b>
+<nav><button data-aba="alta" class="ativa">Temas em alta</button><button data-aba="canal">Canal</button></nav>
+<span id="tarefa" class="info" style="margin:0"></span></header>
+<main>
+<pre id="log"></pre>
+
+<section id="alta" class="ativa">
+ <div class="filtros">
+  <label>Rodada<select id="rodada"></select></label>
+  <label>Buscar título ou canal<input id="busca" placeholder="ex.: ferrovia" style="width:200px"></label>
+  <label>Visualizações mín.<select id="minViews">
+   <option value="0">todas</option><option value="5000">5 mil</option><option value="10000">10 mil</option><option value="20000" selected>20 mil</option>
+   <option value="50000">50 mil</option><option value="100000">100 mil</option><option value="500000">500 mil</option></select></label>
+  <label>Duração mín.<select id="minMin"><option value="0">qualquer</option><option value="4">4 min</option><option value="8" selected>8 min</option><option value="15">15 min</option><option value="30">30 min</option></select></label>
+  <label>Termo<select id="termo"><option value="">todos</option></select></label>
+  <label class="cb"><input type="checkbox" id="soPt" checked> só em português</label>
+  <label class="cb"><input type="checkbox" id="semFora" checked> sem música, esportes, games e comédia</label>
+  <button class="acao" id="btnTend">Atualizar a lista</button>
+ </div>
+ <div class="info" id="infoAlta"></div>
+ <table><thead><tr><th class="esconde"></th>
+  <th class="ord" data-c="titulo">Vídeo</th><th class="ord" data-c="canal">Canal</th>
+  <th class="ord n" data-c="views">Views</th><th class="ord n" data-c="views_dia">Views/dia</th>
+  <th class="ord n" data-c="minutos">Duração</th><th class="ord n" data-c="publicado">Publicado</th></tr></thead>
+ <tbody id="listaAlta"></tbody></table>
+</section>
+
+<section id="canal">
+ <div class="filtros"><button class="acao" id="btnMet">Atualizar as métricas</button></div>
+ <div class="info" id="infoCanal"></div>
+ <div class="tiles" id="tiles"></div>
+ <div class="cartao"><h2>Evolução do canal</h2>
+  <div class="filtros" style="margin:6px 0 0"><label>Métrica<select id="metCanal"></select></label></div>
+  <div class="legenda" id="legCanal"></div><div class="graf" id="grafCanal"></div>
+  <div class="info">Cada ponto é uma rodada do <code>--so metricas</code>. Views, likes e comentários são de agora; minutos e inscritos vêm do YouTube Analytics, que atrasa 1 a 2 dias.</div></div>
+ <div class="cartao"><h2>Evolução por vídeo</h2>
+  <div class="filtros" style="margin:6px 0 0"><label>Métrica<select id="metVideo"></select></label>
+   <span class="info" style="margin:0">Marque até 3 vídeos na tabela abaixo.</span></div>
+  <div class="legenda" id="legVideo"></div><div class="graf" id="grafVideo"></div></div>
+ <table><thead><tr><th></th><th class="ord" data-c="titulo">Vídeo</th><th class="ord" data-c="tipo">Tipo</th>
+  <th class="ord n" data-c="publicado">Publicado</th><th class="ord n" data-c="views">Views</th><th class="ord n" data-c="dviews">Desde a rodada anterior</th>
+  <th class="ord n esconde" data-c="minutos">Min. assistidos</th><th class="ord n esconde" data-c="pct">% assistida</th><th class="ord n" data-c="inscritos">Inscritos</th></tr></thead>
+ <tbody id="listaCanal"></tbody></table>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const CORES=['var(--s1)','var(--s2)','var(--s3)'];
+const fmt=n=>n==null?'–':Math.round(n).toLocaleString('pt-BR');
+const curto=n=>n>=1e6?(n/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi':n>=1e3?(n/1e3).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mil':fmt(n);
+const data=s=>s?new Date(s).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'–';
+const dataHora=s=>new Date(s).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function guardar(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function lido(k){try{return localStorage.getItem(k)}catch(e){return null}}
+
+// abas
+function aba(nome){$$('nav button').forEach(b=>b.classList.toggle('ativa',b.dataset.aba==nome));$$('section').forEach(s=>s.classList.toggle('ativa',s.id==nome));guardar('aba',nome);if(nome=='canal')desenharGraficos()}
+$$('nav button').forEach(b=>b.onclick=()=>aba(b.dataset.aba));
+
+// ordenação genérica de tabela
+function ordenavel(sel,estado,redesenhar){$$(sel+' th.ord').forEach(th=>th.onclick=()=>{const c=th.dataset.c;
+ estado.dir=estado.col==c?-estado.dir:(['titulo','canal','tipo'].includes(c)?1:-1);estado.col=c;redesenhar()})}
+function marcarOrdem(sel,estado){$$(sel+' th.ord').forEach(th=>{th.classList.toggle('sel',th.dataset.c==estado.col);
+ th.textContent=th.textContent.replace(/ [▲▼]$/,'')+(th.dataset.c==estado.col?(estado.dir>0?' ▲':' ▼'):'')})}
+function comparar(estado){return (a,b)=>{const x=a[estado.col],y=b[estado.col];if(x==null)return 1;if(y==null)return -1;
+ return (typeof x=='string'?x.localeCompare(y,'pt'):x-y)*estado.dir}}
+
+// ---------- temas em alta ----------
+let alta={videos:[]};const ordAlta={col:'views_dia',dir:-1};
+async function carregarAlta(rodada){alta=await (await fetch('api/tendencias'+(rodada?'?rodada='+rodada:''))).json();
+ $('#rodada').innerHTML=alta.rodadas.map(r=>`<option value="${r}" ${r==alta.rodada?'selected':''}>${r.slice(8,10)}/${r.slice(5,7)} ${r.slice(11,13)}:${r.slice(13)}</option>`).join('');
+ const termos=[...new Set(alta.videos.flatMap(v=>v.termos))].sort();const atual=$('#termo').value;
+ $('#termo').innerHTML='<option value="">todos</option>'+termos.map(t=>`<option ${t==atual?'selected':''}>${esc(t)}</option>`).join('');
+ desenharAlta()}
+function desenharAlta(){
+ const q=$('#busca').value.trim().toLowerCase(),mv=+$('#minViews').value,mm=+$('#minMin').value,t=$('#termo').value,pt=$('#soPt').checked,sf=$('#semFora').checked;
+ const lista=alta.videos.filter(v=>v.views>=mv&&v.minutos>=mm&&v.minutos<=(alta.config.max_minutos||600)&&(!pt||v.pt)&&(!sf||!v.fora)&&(!t||v.termos.includes(t))
+  &&(!q||(v.titulo+' '+v.canal).toLowerCase().includes(q))).sort(comparar(ordAlta));
+ marcarOrdem('#alta',ordAlta);
+ const r=alta.rodada||'',idade=r?(Date.now()-new Date(r.slice(0,10)+'T'+r.slice(11,13)+':'+r.slice(13))) /864e5:0;
+ $('#infoAlta').innerHTML=!r?'<span class="aviso">Nenhuma rodada ainda. Clique em "Atualizar a lista".</span>':
+  `${lista.length} de ${alta.videos.length} vídeos ${alta.brutos?'que a busca trouxe':'(rodada antiga: só os que passaram no filtro daquele dia)'}, publicados até ${alta.config.dias} dias antes da rodada. `+
+  `O filtro do <code>config.yaml</code> é ${curto(alta.config.min_views)} views e ${alta.config.min_minutos}+ min; os marcados <span class="selo alta">filtro</span> passaram nele. `+
+  (idade>1?`<span class="aviso">Rodada de ${Math.floor(idade)} dia(s) atrás: os números das views são daquele dia.</span>`:'');
+ $('#listaAlta').innerHTML=lista.length?lista.map(v=>`<tr>
+  <td class="esconde"><a href="${v.url}" target="_blank" rel="noopener"><img loading="lazy" src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg" alt=""></a></td>
+  <td><div class="tit"><a href="${v.url}" target="_blank" rel="noopener">${esc(v.titulo)}</a></div>
+   <div class="sub">${v.aprovado?'<span class="selo alta">filtro</span>':''}${v.termos.slice(0,3).map(t=>`<span class="selo">${esc(t)}</span>`).join('')}</div></td>
+  <td>${esc(v.canal)}</td><td class="n">${fmt(v.views)}</td><td class="n">${fmt(v.views_dia)}</td><td class="n">${v.minutos} min</td>
+  <td class="n">${data(v.publicado)}<div class="sub">${v.dias<1?'menos de 1 dia':Math.round(v.dias)+' dia(s)'} antes</div></td></tr>`).join('')
+  :'<tr><td colspan="7" class="vazio">Nenhum vídeo com esses filtros. Baixe as visualizações mínimas ou tire o termo.</td></tr>'}
+ordenavel('#alta',ordAlta,desenharAlta);
+['#busca','#minViews','#minMin','#termo','#soPt','#semFora'].forEach(s=>$(s).addEventListener('input',desenharAlta));
+$('#rodada').onchange=e=>carregarAlta(e.target.value);
+
+// ---------- canal ----------
+let met={rodadas:[]},videos=[],canal=[],marcados=[];const ordCanal={col:'publicado',dir:-1};
+const METRICAS={views:'Visualizações',minutos:'Minutos assistidos',inscritos:'Inscritos ganhos',likes:'Likes',comentarios:'Comentários'};
+const segundos=iso=>{const m=(iso||'').match(/P(?:\d+D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)||[];return (+m[1]||0)*3600+(+m[2]||0)*60+(+m[3]||0)};
+async function carregarCanal(){met=await (await fetch('api/metricas')).json();
+ // por vídeo: todas as rodadas de todos os projetos, juntas pelo id
+ const por={};for(const r of met.rodadas)for(const v of r.videos){const t=new Date(r.quando).getTime();
+  const x=por[v.id]||(por[v.id]={...v,pontos:[]});Object.assign(x,{...v,pontos:x.pontos});x.pontos.push({t,...v})}
+ videos=Object.values(por).map(v=>{v.pontos.sort((a,b)=>a.t-b.t);v.pontos=v.pontos.filter((p,i,a)=>!i||p.t-a[i-1].t>36e5);
+  const u=v.pontos[v.pontos.length-1],ant=v.pontos[v.pontos.length-2];
+  return {...v,...u,tipo:segundos(v.duracao)<=180?'Short':'Longo',dviews:ant?u.views-ant.views:null,desde:ant?ant.t:null}});
+ canal=met.rodadas.filter(r=>r.projeto=='canal').map(r=>({t:new Date(r.quando).getTime(),videos:r.videos}));
+ // a última rodada do canal tem todos os vídeos que existem hoje; os outros eram testes ou foram apagados
+ if(canal.length){const hoje=new Set(canal[canal.length-1].videos.map(v=>v.id));videos=videos.filter(v=>hoje.has(v.id))}
+ if(!marcados.length)marcados=videos.filter(v=>v.status=='public').sort((a,b)=>b.views-a.views).slice(0,3).map(v=>v.id);
+ desenharCanal()}
+function somar(vs,m){return vs.reduce((s,v)=>s+(v[m]||0),0)}
+function desenharCanal(){
+ const u=canal[canal.length-1],a=canal[canal.length-2];
+ if(!u){$('#infoCanal').innerHTML='<span class="aviso">Ainda não há métricas do canal. Clique em "Atualizar as métricas".</span>';return}
+ $('#infoCanal').textContent=`Última rodada: ${dataHora(u.t)}${a?` · comparada com ${dataHora(a.t)}`:''} · ${canal.length} rodadas do canal inteiro.`;
+ const pub=vs=>vs.filter(v=>v.status=='public');
+ $('#tiles').innerHTML=[['views','Visualizações'],['minutos','Minutos assistidos'],['inscritos','Inscritos ganhos'],['likes','Likes']].map(([m,r])=>{
+  const agora=somar(u.videos,m),d=a?agora-somar(a.videos,m):null;
+  return `<div class="tile"><div class="r">${r}</div><div class="v">${fmt(agora)}</div><div class="d">${d==null?'':(d>=0?'+':'')+fmt(d)+' desde a rodada anterior'}</div></div>`}).join('')+
+  `<div class="tile"><div class="r">Vídeos públicos</div><div class="v">${pub(u.videos).length}</div><div class="d">${pub(u.videos).filter(v=>segundos(v.duracao)<=180).length} Shorts · ${pub(u.videos).filter(v=>segundos(v.duracao)>180).length} longos</div></div>`;
+ marcarOrdem('#canal',ordCanal);
+ $('#listaCanal').innerHTML=videos.slice().sort(comparar(ordCanal)).map(v=>{const i=marcados.indexOf(v.id);return `<tr>
+  <td><input type="checkbox" ${i>=0?'checked':''} onchange="marcar('${v.id}',this.checked)" aria-label="mostrar no gráfico">${i>=0?`<span class="cor" style="background:${CORES[i]};margin-left:6px"></span>`:''}</td>
+  <td><div class="tit"><a href="${v.url}" target="_blank" rel="noopener">${esc(v.titulo)}</a></div>${v.status!='public'?`<div class="sub">${v.status}</div>`:''}</td>
+  <td>${v.tipo}</td><td class="n">${data(v.publicado)}</td><td class="n">${fmt(v.views)}</td>
+  <td class="n">${v.dviews==null?'–':(v.dviews>=0?'+':'')+fmt(v.dviews)}</td>
+  <td class="n esconde">${fmt(v.minutos)}</td><td class="n esconde">${v.pct==null?'–':Math.round(v.pct)+'%'}</td><td class="n">${fmt(v.inscritos)}</td></tr>`}).join('');
+ desenharGraficos()}
+function marcar(id,sim){marcados=marcados.filter(x=>x!=id);if(sim){marcados.push(id);if(marcados.length>3)marcados.shift()}desenharCanal()}
+ordenavel('#canal',ordCanal,desenharCanal);
+for(const s of ['#metCanal','#metVideo']){$(s).innerHTML=Object.entries(METRICAS).map(([k,r])=>`<option value="${k}">${r}</option>`).join('');$(s).onchange=desenharGraficos}
+
+function desenharGraficos(){if(!$('#canal').classList.contains('ativa')||!canal.length)return;
+ const m=$('#metCanal').value,mv=$('#metVideo').value;
+ const curtos=v=>segundos(v.duracao)<=180;
+ linhas('#grafCanal','#legCanal',[
+  {nome:'Shorts',cor:CORES[0],pontos:canal.map(r=>({t:r.t,y:somar(r.videos.filter(curtos),m)}))},
+  {nome:'Vídeos longos',cor:CORES[1],pontos:canal.map(r=>({t:r.t,y:somar(r.videos.filter(v=>!curtos(v)),m)}))}],METRICAS[m]);
+ linhas('#grafVideo','#legVideo',marcados.map((id,i)=>{const v=videos.find(x=>x.id==id);
+  return {nome:v.titulo,cor:CORES[i],pontos:v.pontos.filter(p=>p[mv]!=null).map(p=>({t:p.t,y:p[mv]}))}}),METRICAS[mv])}
+
+// gráfico de linhas em SVG, com dica ao passar o mouse
+function linhas(alvo,leg,series,rotulo){
+ const el=$(alvo),W=el.clientWidth||900,H=280,m={l:56,r:16,t:14,b:28};
+ $(leg).innerHTML=series.length>1?series.map(s=>`<span><i style="background:${s.cor}"></i>${esc(s.nome.length>60?s.nome.slice(0,58)+'…':s.nome)}</span>`).join(''):'';
+ const pts=series.flatMap(s=>s.pontos);if(!pts.length){el.innerHTML='<div class="vazio">Sem dados para esta métrica.</div>';return}
+ const t0=Math.min(...pts.map(p=>p.t)),t1=Math.max(...pts.map(p=>p.t)),ymax=Math.max(1,...pts.map(p=>p.y));
+ const passo=Math.pow(10,Math.floor(Math.log10(ymax/4))),inc=[1,2,2.5,5,10].map(k=>k*passo).find(k=>ymax/k<=5),topo=Math.ceil(ymax/inc)*inc;
+ const x=t=>m.l+(t1==t0?0.5:(t-t0)/(t1-t0))*(W-m.l-m.r),y=v=>H-m.b-(v/topo)*(H-m.t-m.b);
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(rotulo)} ao longo do tempo">`;
+ for(let v=0;v<=topo+1e-9;v+=inc)s+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y(v)}" y2="${y(v)}" stroke="${v?'#232b35':'#3a4450'}"/><text x="${m.l-8}" y="${y(v)+4}" fill="#8a929c" font-size="11" text-anchor="end">${curto(v)}</text>`;
+ const dias=[];for(let d=new Date(new Date(t0).toDateString()).getTime();d<=t1+1;d+=864e5)dias.push(d);
+ const cada=Math.ceil(dias.length/Math.max(2,Math.floor((W-m.l-m.r)/70)));
+ dias.forEach((d,i)=>{if(i%cada==0&&d>=t0-864e5)s+=`<text x="${Math.max(m.l,Math.min(W-m.r,x(Math.max(d,t0))))}" y="${H-8}" fill="#8a929c" font-size="11" text-anchor="middle">${data(d)}</text>`});
+ for(const se of series){if(!se.pontos.length)continue;
+  s+=`<path d="${se.pontos.map((p,i)=>(i?'L':'M')+x(p.t).toFixed(1)+' '+y(p.y).toFixed(1)).join(' ')}" fill="none" stroke="${se.cor}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  s+=se.pontos.map(p=>`<circle cx="${x(p.t)}" cy="${y(p.y)}" r="4" fill="${se.cor}" stroke="#151b23" stroke-width="2"/>`).join('')}
+ s+=`<line id="mira" y1="${m.t}" y2="${H-m.b}" stroke="#666" stroke-dasharray="3 3" style="display:none"/></svg><div class="dica"></div>`;
+ el.innerHTML=s;const svg=el.querySelector('svg'),dica=el.querySelector('.dica'),mira=el.querySelector('#mira');
+ const tempos=[...new Set(pts.map(p=>p.t))].sort((a,b)=>a-b);
+ svg.onmousemove=e=>{const r=svg.getBoundingClientRect(),px=(e.clientX-r.left)*W/r.width;
+  const t=tempos.reduce((a,b)=>Math.abs(x(b)-px)<Math.abs(x(a)-px)?b:a);
+  mira.setAttribute('x1',x(t));mira.setAttribute('x2',x(t));mira.style.display='';
+  dica.innerHTML=`<b>${dataHora(t)}</b>`+series.map(se=>{const p=se.pontos.find(q=>q.t==t);return p?`<div><span class="cor" style="background:${se.cor}"></span>${esc(se.nome.slice(0,40))}: <b style="display:inline">${fmt(p.y)}</b></div>`:''}).join('');
+  dica.style.display='block';const ex=x(t)*r.width/W;dica.style.left=(ex>r.width/2?ex-dica.offsetWidth-12:ex+12)+'px';dica.style.top='10px'};
+ svg.onmouseleave=()=>{dica.style.display='none';mira.style.display='none'}}
+addEventListener('resize',()=>desenharGraficos());
+
+// ---------- atualizar pelo painel ----------
+async function atualizar(etapa){
+ const aviso=etapa=='tendencias'?'Buscar os vídeos em alta agora? Gasta cerca de 3.000 unidades da cota diária do YouTube (10.000) e a busca tem limite próprio por dia: o ideal é uma vez por dia.'
+  :'Buscar as métricas do canal agora? Gasta pouca cota (umas 30 unidades).';
+ if(!confirm(aviso))return;
+ const r=await fetch('api/atualizar/'+etapa,{method:'POST'});if(!r.ok){alert((await r.json()).erro);return}
+ acompanhar()}
+$('#btnTend').onclick=()=>atualizar('tendencias');$('#btnMet').onclick=()=>atualizar('metricas');
+async function acompanhar(){const e=await (await fetch('api/tarefa')).json();
+ const nome={tendencias:'a lista em alta',metricas:'as métricas'}[e.etapa],pronto={tendencias:'Lista em alta atualizada',metricas:'Métricas atualizadas'}[e.etapa];
+ $$('button.acao').forEach(b=>b.disabled=e.rodando);
+ if(e.rodando){$('#tarefa').innerHTML=e.log.includes('Abrindo o navegador')?'<span class="aviso">O login do YouTube venceu: autorize na aba do Google que abriu no navegador.</span>':`Atualizando ${nome}…`;$('#log').style.display='block';$('#log').textContent=e.log;$('#log').scrollTop=1e9;setTimeout(acompanhar,2000);return}
+ if(e.etapa){$('#tarefa').innerHTML=e.codigo?`<span style="color:var(--ruim)">Falhou ao atualizar ${nome} (veja o registro abaixo)</span>`:`${pronto} às ${e.fim.slice(11,16)}`;
+  $('#log').style.display=e.codigo?'block':'none';$('#log').textContent=e.log;
+  if(!e.codigo){e.etapa=='tendencias'?carregarAlta():carregarCanal()}}}
+
+aba(lido('aba')||'alta');carregarAlta();carregarCanal();acompanhar();
+</script></body></html>

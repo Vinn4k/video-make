@@ -1,0 +1,21 @@
+{
+  "description": "Trilha instrumental com ACE-Step 1.5 Turbo (Apache-2.0). Modelo: ComfyUI/models/checkpoints/ace_step_1.5_turbo_aio.safetensors (Templates → Audio → ACE-Step 1.5 Music Generation AIO).",
+  "inputs": {
+    "tags": "94.inputs.tags",
+    "lyrics": "94.inputs.lyrics",
+    "bpm": "94.inputs.bpm",
+    "keyscale": "94.inputs.keyscale",
+    "duration": [
+      "94.inputs.duration",
+      "98.inputs.seconds"
+    ],
+    "seed": [
+      "94.inputs.seed",
+      "3.inputs.seed"
+    ]
+  },
+  "output": {
+    "node": "106",
+    "kind": "audio"
+  }
+}

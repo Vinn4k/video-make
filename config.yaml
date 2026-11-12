@@ -1,0 +1,171 @@
+# Configuração geral do gerador de vídeos.
+# Chaves de API ficam no arquivo .env (veja .env.example), nunca aqui.
+
+video:
+  duracao_alvo_min: 15       # duração aproximada do vídeo final
+  palavras_por_minuto: 170   # ritmo real da narração (Google com prosódia: 174 no megaobras-sao-paulo), dimensiona o roteiro
+  largura: 1920
+  altura: 1080
+  fps: 30
+  formato: programa          # programa (abertura com escalada, vinheta, blocos com placa e "a seguir") | documentario (contínuo)
+  render_concorrencia: 2     # quadros renderizados em paralelo pelo Remotion; mais que isso travou o Mac de 16 GB com clipes em 1080p
+  render_timeout_seg: 120    # tempo máximo por quadro antes do Remotion desistir
+
+programa:                    # formato de programa de TV (video.formato ou --formato)
+  vinheta_seg: 4.5           # vinheta do canal depois da abertura, sem narração; termina mostrando o bloco 1
+  placa_seg: 3.0             # placa "BLOCO N" entre os blocos, sem narração: é o ponto natural do intervalo
+  a_seguir_seg: 6            # faixa "A SEGUIR" nos últimos segundos de cada bloco
+  minutos_por_bloco: 5       # tamanho dos blocos; a abertura vem a mais
+  som: assets/vinheta        # vinheta.* e placa.* tocam nesses trechos; sem eles, o sistema gera um som simples
+
+sfx:                         # efeitos sonoros sintetizados no ffmpeg: revelações do longo (número em destaque, frase de impacto, manchete) e passagens de cena
+  ativo: true
+  volume: 0.5                # nível geral dos efeitos sobre a narração (a mixagem final é normalizada)
+  intervalo_min_seg: 30      # revelações mais perto que isso: fica só a de maior prioridade (frase > número > manchete)
+  pasta: assets/sfx          # <nome>.wav aqui troca o som gerado; cena com "sfx": "sub" força, "sfx": false cala
+  passagem:                  # sopro macio nos cortes de cena, só dentro das pausas da fala
+    ativo: true
+    gap_min_seg: 0.3         # só corta onde há pelo menos esta pausa entre uma fala e a seguinte
+    intervalo_min_seg: 10    # entre duas passagens
+    longe_de_revelacao_seg: 5
+
+llm:
+  provedor: auto             # auto | anthropic | manual  (auto = anthropic se houver chave, senão manual)
+  modelo: claude-opus-5-5
+  esforco: high              # low | medium | high | xhigh | max
+
+tts:
+  provedor: auto             # auto | google | comfyui | openai | elevenlabs | macos  (auto = Google se houver GEMINI_API_KEY, senão ComfyUI, chaves pagas, macOS por último)
+  pausa_cena: 0.25           # segundos de silêncio entre cenas
+  pausa_capitulo: 0.8        # segundos de silêncio na troca de capítulo
+  conferencia:               # Whisper confere se a voz falou o texto (precisa do ANALISE_URL no .env)
+    ativa: true
+    wer_maximo: 0.12         # acima disso (12% de palavras erradas) a cena é gerada de novo
+    tentativas: 2
+  pronuncia:                 # grafia que a voz deve falar; a legenda continua com o original
+    Stanford: Stênford
+    Yale: Iêil
+    Carbios: Carbiôs
+    PET: pét
+  prosodia: true             # nas vozes que entendem tags (google), o LLM marca pausas, ênfases e emoção (prompts/prosodia.md)
+  palavras_entre_respiracoes: 170  # no máximo um <breath> a cada 170 palavras (≈ 1 por minuto); o público reclamou de excesso em 05/11/2026
+  google:                    # Gemini TTS ("Generate Speech" do AI Studio); precisa de GEMINI_API_KEY. Voz padrão.
+    pago: true               # faturamento ativo desde 27/10/2026 (~US$ 0,50 por 30 min de voz): 429 é limite por minuto, espera e tenta de novo
+                             # com GEMINI_API_KEY_GRATIS no .env (projeto sem faturamento), a cota grátis dela é usada antes da chave paga
+    modelos:                 # em ordem: sem faturamento, quando a cota grátis (10 pedidos/dia por modelo) acaba, tenta o próximo
+      - gemini-3.8-flash-tts
+      - gemini-3.8-flash-lite-tts
+    reserva: comfyui         # sem cota em nenhum modelo: narra o vídeo INTEIRO com esta voz (comfyui) ou para e espera (esperar)
+    voz: Charon              # outras: Kore, Puck, Fenrir, Orus, Algenib, Iapetus…
+    estilo: ""               # vazio de propósito: a emoção vai marcada no texto pela prosódia
+    blocos: true             # narra várias cenas por pedido e corta pelo Whisper (entonação contínua e menos pedidos)
+    max_palavras_bloco: 700  # ≈ 5 min de fala por pedido; blocos nunca atravessam capítulos
+    tentativas_bloco: 2      # novas tentativas quando uma cena do bloco sai errada (cada uma é um pedido pago, centavos)
+  comfyui:                   # ChatterBox Multilingual (TTS Audio Suite) no PC da GPU
+    workflow: narracao_ptbr_voz
+    referencia: ref-pf_dora.wav   # arquivo em assets/vozes/ (voz "Dora", sintética, PT-BR)
+    cfg: 0.3
+    temperature: 0.95
+  openai:
+    modelo: gpt-4o-mini-tts
+    voz: onyx
+    instrucoes: "Narrador de documentário brasileiro. Tom calmo, curioso e envolvente, ritmo pausado, português do Brasil."
+  elevenlabs:
+    voz_id: ""               # ID da voz na sua conta ElevenLabs
+    modelo: eleven_multilingual_v2
+  macos:
+    voz: Luciana
+    velocidade: 175          # palavras por minuto
+
+midia:
+  provedores: [pixabay, pexels, wikimedia]   # ordem de tentativa; os sem chave são pulados (Pixabay primeiro: o Pexels limita a 200 pedidos por hora e trava ~50 s por busca quando estoura)
+  candidatos: 2              # candidatos avaliados por cena (era 4; 2 no Rodoanel Norte por causa do horário)
+  visao: false               # Qwen3-VL no ComfyUI dá nota a cada candidato (desligada no Rodoanel Norte: o usuário revisa a prévia em 2x à mão)
+  nota_minima: 6             # abaixo disso, gera a imagem com IA
+  gerar_imagem: true         # Z-Image Turbo no ComfyUI para cenas sem imagem boa ou marcadas como "ia"
+
+adaptacao:
+  max_ngram_igual: 8         # maior sequência de palavras idêntica permitida em relação à referência
+  max_sobreposicao: 0.10     # fração máxima de trechos de 5 palavras repetidos da referência
+  tentativas_reescrita: 2
+
+visual:
+  cor_destaque: "#F5C518"
+  cor_fundo: "#0B0F14"
+  cor_texto: "#FFFFFF"
+  selo_inscricao: cta        # sempre | cta | nunca
+  transicao_frames: 10
+
+musica:
+  arquivo: ""                # vazio = usa o primeiro arquivo de assets/musica; se não houver, gera com ACE-Step
+  volume: 0.12
+  gerar: true                # gera a trilha no ComfyUI (ACE-Step 1.5) quando assets/musica está vazia
+  estilo: "cinematic documentary underscore, soft piano, warm strings, ambient pads, curious and hopeful, slow build, instrumental, no vocals"
+  bpm: 80
+  tom: D minor
+  duracao_seg: 120           # a faixa repete em loop durante o vídeo
+
+shorts:
+  quantidade: 3              # cortes verticais (1080x1920) tirados do vídeo longo
+  min_seg: 30
+  max_seg: 60
+  cta:                       # botão "inscreva-se" animado abaixo da chamada do topo, com sinal sonoro (não corta a narração)
+    ligado: true
+    inicio_seg: 10           # nunca antes do fim do aviso (5 s) nem colado no convite final
+    duracao_seg: 4           # o toque que vira "inscrito" acontece na metade
+    texto: "Inscreva-se e ative o sino"
+    inscrito: "Inscrito"
+    som: true                # "plim-plim" curto na entrada e um clique no toque (sintetizado no ffmpeg, não é voz)
+  pergunta:                  # fim de cada Short: a voz do narrador pergunta ("E aí, o que você achou de…? Comenta aqui embaixo")
+    ligado: true             # o texto vem do campo `pergunta` do shorts.json; só sai com a voz do Google (a mesma do vídeo)
+    selo: "Comenta aqui embaixo"  # balão na tela enquanto a pergunta é falada
+
+tendencias:                  # vídeos em alta no nicho (run.py --projeto canal --so tendencias)
+  dias: 7                    # publicados nos últimos N dias
+  min_views: 100000
+  min_minutos: 8             # só vídeo longo; Shorts não servem de referência de roteiro
+  termos:                    # cada termo gasta ~200 unidades da cota diária da API (10.000)
+    - megaobras
+    - maior obra do Brasil
+    - como foi construído
+    - obra abandonada
+    - engenharia brasileira
+    - usina hidrelétrica
+    - ferrovia Brasil
+    - metrô São Paulo
+    - China megaprojeto
+    - documentário natureza Brasil
+    - animais selvagens documentário
+    - Amazônia documentário
+    - rio São Francisco
+    - descoberta científica
+    - ciência curiosidades
+  categorias_fora: [10, 17, 20, 23]   # música, esportes, games, comédia (notícias fica: canais de obras usam essa categoria)
+  max_minutos: 150           # acima disso costuma ser live
+
+youtube:                     # envio e agendamento pela API (run.py --so youtube; só sobe com --confirmar)
+  canal: "Nome do Seu Canal"  # o envio só acontece se a conta autorizada for este canal
+  fuso: America/Sao_Paulo
+  hora_video: "12:00"        # o vídeo longo sai no dia do lançamento, neste horário (antes do pico das 19h-22h)
+  short_vespera: "18:00"     # trailer: o 2º Short sai na véspera, neste horário (vazio = sem trailer)
+  short_depois_min: 60       # o 1º Short (o mais forte) sai X min depois do longo, já com o link funcionando
+  hora_shorts: "12:00"       # os outros Shorts: um por dia a partir do dia seguinte, do mais viral para o menos
+  categoria: 28              # Ciência e tecnologia
+  idioma: pt-BR
+  rodape: |
+    🔔 Inscreva-se no canal.
+    #ciência #engenharia #documentário
+
+instagram:                   # Reels pelo Zernio (run.py --so instagram; só agenda com --confirmar). Chave ZERNIO_API_KEY no .env
+  conta: seu_perfil_instagram    # o envio só acontece se a conta conectada no Zernio for esta
+  hora: "12:00"              # Shorts cujo horário no YouTube já passou entram numa fila: um Reel por dia neste horário
+  capa: B                    # capa A no YouTube, B no Instagram e no TikTok
+  chamada: "🎬 Documentário completo no YouTube: Nome do Seu Canal (link na bio)"
+  hashtags: ["#ciência", "#engenharia", "#documentário"]  # mais até 3 tags do vídeo, sem espaço
+
+publicacao:
+  comentario_manual:         # comentário com chamada (CTA) em cada postagem; escreva os seus textos
+    ligado: false            # YouTube: comentário pela API (fixar no Studio); Instagram: 1º comentário do Reel pelo Zernio
+    video: ""
+    short: ""
+    reels_tiktok: ""

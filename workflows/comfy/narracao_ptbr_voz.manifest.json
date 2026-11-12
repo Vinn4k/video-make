@@ -1,0 +1,16 @@
+{
+  "description": "Narração PT-BR com ChatterBox Multilingual imitando uma voz de referência da pasta input/ do ComfyUI (`reference`, padrão ia-editor-voz-ptbr.wav). Use referências em PT-BR: referência em inglês puxa sotaque americano.",
+  "inputs": {
+    "text": "2.inputs.text",
+    "seed": "2.inputs.seed",
+    "reference": "4.inputs.audio",
+    "model": "1.inputs.model_version",
+    "exaggeration": "1.inputs.exaggeration",
+    "cfg": "1.inputs.cfg_weight",
+    "temperature": "1.inputs.temperature"
+  },
+  "output": {
+    "node": "3",
+    "kind": "audio"
+  }
+}

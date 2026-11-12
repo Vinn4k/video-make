@@ -1,0 +1,66 @@
+{
+  "1": {
+    "class_type": "ChatterBoxOfficial23LangEngineNode",
+    "_meta": {
+      "title": "⚙️ ChatterBox Official 23-Lang Engine"
+    },
+    "inputs": {
+      "model_version": "v3",
+      "language": "Portuguese",
+      "device": "auto",
+      "exaggeration": 0.5,
+      "temperature": 0.8,
+      "cfg_weight": 0.5,
+      "repetition_penalty": 1.2,
+      "min_p": 0.05,
+      "top_p": 1.0
+    }
+  },
+  "2": {
+    "class_type": "UnifiedTTSTextNode",
+    "_meta": {
+      "title": "🎤 TTS Text"
+    },
+    "inputs": {
+      "TTS_engine": [
+        "1",
+        0
+      ],
+      "text": "Olá! Este é um teste da narração do IA Editor.",
+      "narrator_voice": "none",
+      "seed": 42,
+      "enable_chunking": true,
+      "max_chars_per_chunk": 400,
+      "chunk_combination_method": "auto",
+      "silence_between_chunks_ms": 100,
+      "enable_audio_cache": true,
+      "batch_size": 0,
+      "opt_narrator": [
+        "4",
+        0
+      ]
+    }
+  },
+  "3": {
+    "class_type": "SaveAudio",
+    "_meta": {
+      "title": "Save Audio"
+    },
+    "inputs": {
+      "audio": [
+        "2",
+        0
+      ],
+      "filename_prefix": "video-make/narracao"
+    }
+  },
+  "4": {
+    "class_type": "LoadAudio",
+    "_meta": {
+      "title": "Voz de referência (PT-BR)"
+    },
+    "inputs": {
+      "audio": "ia-editor-ref-pf_dora.wav"
+    }
+  }
+}

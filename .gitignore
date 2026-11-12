@@ -1,0 +1,27 @@
+# segredos e credenciais
+.env
+credenciais/
+*.token.json
+
+# ambientes e dependências
+.venv/
+__pycache__/
+node_modules/
+.tmp/
+
+# saídas e mídia (pesadas e pessoais)
+projetos/
+estruturas/
+assets/
+marca/
+produtos/
+render/out/
+render/public/
+render/motion/
+*.mp4
+*.mov
+*.wav
+*.mp3
+*.m4a
+.DS_Store
+.claude/settings.local.json

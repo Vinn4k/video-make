@@ -1,0 +1,10 @@
+{
+  "description": "Imagem fotográfica 16:9 com Z-Image Turbo (8 passos). Usada quando nenhum banco de imagens tem algo bom para a cena.",
+  "inputs": {
+    "prompt": "5.inputs.text",
+    "seed": "8.inputs.seed",
+    "width": "7.inputs.width",
+    "height": "7.inputs.height"
+  },
+  "output": {"node": "10", "kind": "images"}
+}

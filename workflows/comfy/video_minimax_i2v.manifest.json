@@ -1,0 +1,6 @@
+{
+  "description": "Vídeo de até ~8 s (24 fps) a partir de um primeiro quadro, com MiniMax H3 local. Usado nos fundos dos motion graphics.",
+  "inputs": {"image": "4.inputs.image", "prompt": "5.inputs.prompt", "width": "5.inputs.width", "height": "5.inputs.height",
+             "length": "5.inputs.length", "seed": "8.inputs.seed", "steps": "8.inputs.steps", "cfg": "8.inputs.cfg"},
+  "output": {"node": "10", "kind": "images"}
+}
