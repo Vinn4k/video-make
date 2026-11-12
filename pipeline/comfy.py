@@ -6,7 +6,7 @@ Os workflows ficam em workflows/comfy/<nome>.json (formato API), cada um com um
   {"inputs": {"text": "2.inputs.text", "seed": ["94.inputs.seed", "3.inputs.seed"]},
    "output": {"node": "3", "kind": "audio"}}
 
-Mesmo formato do projeto ia-editor, então os workflows servem nos dois.
+Formato de workflow exportado em "API format" do ComfyUI + manifesto de parâmetros.
 """
 
 import json

@@ -224,7 +224,7 @@ def _sessao(obrigatoria: bool) -> requests.Session | None:
     chave = os.environ.get("ZERNIO_API_KEY", "")
     if not chave:
         if obrigatoria:
-            raise EtapaPendente("Falta ZERNIO_API_KEY no .env. Siga a seção \"Instagram pelo Zernio\" do WORKFLOW.md.")
+            raise EtapaPendente("Falta ZERNIO_API_KEY no .env. Siga a seção \"Instagram pelo Zernio\" do README (Instagram).")
         return None
     sessao = requests.Session()
     sessao.headers["Authorization"] = f"Bearer {chave}"

@@ -317,7 +317,7 @@ def _aplicar_pronuncia(texto: str, pronuncia: dict) -> str:
     return texto
 
 
-# ---------- conferência por Whisper (serviço de análise do ia-editor) ----------
+# ---------- conferência por Whisper (serviço HTTP de análise; contrato no README) ----------
 
 def _analise_online(config: dict) -> bool:
     endereco = os.environ.get("ANALISE_URL", "")

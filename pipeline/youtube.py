@@ -11,7 +11,7 @@ Credenciais em credenciais/ (fora do projeto de vídeo e ignoradas pelo git):
 O que já subiu fica em projetos/<slug>/youtube.json, para nunca enviar o mesmo vídeo duas vezes.
 
 Atenção: projetos de API não verificados sobem vídeos travados em privado até passarem pela
-auditoria do YouTube (formulário grátis); veja o WORKFLOW.md.
+auditoria do YouTube (formulário grátis); veja a seção "YouTube setup" do README.
 """
 
 import os
@@ -116,7 +116,7 @@ def enviar(config: dict, projeto: Path, confirmar: bool = False, inicio: str | N
         for chave in shorts_enviados:
             log(f"   {chave}: https://studio.youtube.com/video/{estado[chave]['id']}/edit")
     log("Pronto. Confira no YouTube Studio: os vídeos aparecem como Agendados. Se aparecerem como "
-        "\"Bloqueado como privado\", o projeto da API ainda precisa da auditoria (WORKFLOW.md).")
+        "\"Bloqueado como privado\", o projeto da API ainda precisa da auditoria (README, "YouTube setup").")
 
 
 def agenda(config: dict, projeto: Path, inicio: str | None, estado: dict) -> list[dict]:
@@ -280,7 +280,7 @@ def _credenciais():
 
     if not CLIENTE.exists():
         raise EtapaPendente(f"Falta o cliente OAuth do Google em {CLIENTE.relative_to(RAIZ)}. "
-                            "Siga a seção \"YouTube pela API\" do WORKFLOW.md.")
+                            "Siga a seção \"YouTube pela API\" do README (YouTube setup).")
     from google.auth.exceptions import RefreshError
 
     cred = Credentials.from_authorized_user_file(str(TOKEN), ESCOPOS) if TOKEN.exists() else None
